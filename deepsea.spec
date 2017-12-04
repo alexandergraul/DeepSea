@@ -263,6 +263,7 @@ systemctl try-restart salt-api > /dev/null 2>&1 || :
 %dir /srv/salt/ceph/stage/cephfs
 %dir /srv/salt/ceph/stage/configure
 %dir /srv/salt/ceph/stage/deploy
+%dir /srv/salt/ceph/stage/deploy/core
 %dir /srv/salt/ceph/stage/discovery
 %dir /srv/salt/ceph/stage/iscsi
 %dir /srv/salt/ceph/stage/ganesha
@@ -494,6 +495,7 @@ systemctl try-restart salt-api > /dev/null 2>&1 || :
 %config /srv/salt/ceph/stage/cephfs/*.sls
 %config /srv/salt/ceph/stage/configure/*.sls
 %config /srv/salt/ceph/stage/deploy/*.sls
+%config /srv/salt/ceph/stage/deploy/core/*.sls
 %config /srv/salt/ceph/stage/discovery/*.sls
 %config /srv/salt/ceph/stage/iscsi/*.sls
 %config /srv/salt/ceph/stage/ganesha/*.sls
