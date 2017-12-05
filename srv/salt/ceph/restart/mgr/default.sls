@@ -5,6 +5,7 @@
       salt.state:
         - tgt: {{ master }}
         - sls: ceph.wait
+        - failhard: True
 
     restarting mgr on {{ host }}:
       salt.state:
