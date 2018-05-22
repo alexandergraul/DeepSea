@@ -1,0 +1,17 @@
+coverage:
+  precision: 2
+  round: down
+  range: 20..30
+
+  status:
+    project:
+      default:
+        # fail if overall coverage drops by 3% or more
+        threshhold: 3
+    patch: 
+        # fail if 80% of patch is not covered by test
+        target:
+            80
+    changes: no
+
+comment: off
