@@ -13,5 +13,5 @@ coverage:
     changes: no
 
 comment: 
-  layout: "diff"
+  layout: "diff, files"
   behavior: once
