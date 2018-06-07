@@ -7,11 +7,13 @@ coverage:
     project:
       default:
         target: null
+        treshold: null
     patch:
       default:
         target: null
+        treshold: null
     changes: no
 
 comment: 
-  layout: "diff, files"
+  layout: "diff"
   behavior: once
