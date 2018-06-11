@@ -20,8 +20,4 @@ checks:
     enabled: false
   identical-code:
     enabled: false
-engines:
-  pylint:
-    enabled: true
-    channel: "beta" # pylint is currently in beta
   
