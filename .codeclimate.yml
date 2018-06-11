@@ -1,35 +1,25 @@
 version: "2"         # required to adjust maintainability checks
 checks:
   argument-count:
-    config:
-      threshold: false
+    enabled: false
   complex-logic:
-    config:
-      threshold: false
+    enabled: false
   file-lines:
-    config:
-      threshold: false
+    enabled: false
   method-complexity:
-    config:
-      threshold: false
+    enabled: false
   method-count:
-    config:
-      threshold: false
+    enabled: false
   method-lines:
-    config:
-      threshold: false
+    enabled: false
   nested-control-flow:
-    config:
-      threshold: false
+    enabled: false
   return-statements:
-    config:
-      threshold: false
+    enabled: false
   similar-code:
-    config:
-      threshold: false
+    enabled: false
   identical-code:
-    config:
-      threshold: false
+    enabled: false
 engines:
   pylint:
     enabled: true
