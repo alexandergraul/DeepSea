@@ -1,0 +1,37 @@
+version: "2"         # required to adjust maintainability checks
+checks:
+  argument-count:
+    config:
+      threshold: false
+  complex-logic:
+    config:
+      threshold: false
+  file-lines:
+    config:
+      threshold: false
+  method-complexity:
+    config:
+      threshold: false
+  method-count:
+    config:
+      threshold: false
+  method-lines:
+    config:
+      threshold: false
+  nested-control-flow:
+    config:
+      threshold: false
+  return-statements:
+    config:
+      threshold: false
+  similar-code:
+    config:
+      threshold: false
+  identical-code:
+    config:
+      threshold: false
+engines:
+  pylint:
+    enabled: true
+    channel: "beta" # pylint is currently in beta
+  
