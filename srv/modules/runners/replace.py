@@ -9,6 +9,7 @@ from __future__ import print_function
 import time
 import logging
 import os
+import yaml
 # pylint: disable=import-error,3rd-party-module-not-gated,redefined-builtin
 import salt.client
 import salt.runner
@@ -52,23 +53,24 @@ def osd(*args, **kwargs):
 
     local = salt.client.LocalClient()
     host_osds = local.cmd('I@roles:storage', 'osd.list', tgt_type='compound')
+    assert isinstance(host_osds, dict)
 
-    completed = osds
     for osd_id in osds:
         host = _find_host(osd_id, host_osds)
         if host:
+            grains = local.cmd(host, 'grains.get', ['ceph'], tgt_type='compound')
             msg = _remove_osd(local, master_minion, osd_id, passed, host)
             if msg:
                 print("{}\nFailed to remove osd {}".format(msg, osd_id))
-                completed.remove(osd_id)
+                osds.remove(osd_id)
                 continue
 
             # Rename minion profile
-            minion_profile(host)
+            minion_profile(host, osds, grains)
 
     if 'called' in kwargs and kwargs['called']:
         # Return for remove.osd
-        return {'master_minion': master_minion, 'osds': completed}
+        return {'master_minion': master_minion, 'osds': osds}
     return ""
 
 
@@ -135,7 +137,7 @@ def _find_host(osd_id, host_osds):
     return ""
 
 
-def minion_profile(minion):
+def minion_profile(minion, osds, grains):
     """
     Rename a minion profile to indicate that the minion profile needs to be
     recreated.
@@ -151,9 +153,35 @@ def minion_profile(minion):
     if yaml_file in files:
         for filename in files[yaml_file]:
             if os.path.exists(filename):
-                print("Renaming minion {} profile".format(minion))
-                os.rename(filename, "{}-replace".format(filename))
+                try:
+                    print("Renaming minion {} profile".format(minion))
+                    os.rename(filename, "{}-replace".format(filename))
+                    _insert_replace_flag(grains, minion, osds, "{}-replace".format(filename))
+                # pylint: disable=bare-except
+                except:
+                    log.error("Failed to rename minion {} profile".format(minion))
+                    os.rename("{}-replace".format(filename), filename)
+
     return ""
+
+
+def _insert_replace_flag(grains, minion, osds, filename):
+    """ Insert 'replace: true' into proposal file for all osds that are passed in """
+
+    with open(filename, 'rb') as proposal_file:
+        content = yaml.safe_load(proposal_file)
+
+    paths_by_id = []
+    for osd_id in osds:
+        if str(osd_id) in grains[minion]:
+            osd_partition = grains[minion][str(osd_id)]['partitions']['osd']
+            # Only add the block device and not the partitions
+            paths_by_id.append(osd_partition.rstrip('0123456789').replace("-part", ""))
+    for path in paths_by_id:
+        content['ceph']['storage']['osds'][path]['replace'] = True
+
+    with open(filename, 'w') as proposal_file:
+        yaml.dump(content, proposal_file, default_flow_style=False)
 
 
 __func_alias__ = {
