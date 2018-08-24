@@ -148,6 +148,10 @@ def minion_profile(minion, osds, grains):
     belong to more than one hardware profile.  Each must be renamed.
     """
     files = __salt__['push.organize']()
+    local = salt.client.LocalClient()
+
+
+    disks = local.cmd(minion, 'cephdisks.list', tgt_type="compound")[minion]
 
     yaml_file = 'stack/default/ceph/minions/{}.yml'.format(minion)
     if yaml_file in files:
@@ -156,7 +160,7 @@ def minion_profile(minion, osds, grains):
                 try:
                     print("Renaming minion {} profile".format(minion))
                     os.rename(filename, "{}-replace".format(filename))
-                    _insert_replace_flag(grains, minion, osds, "{}-replace".format(filename))
+                    _insert_replace_flag(grains, disks, minion, osds, "{}-replace".format(filename))
                 # pylint: disable=bare-except
                 except:
                     log.error("Failed to rename minion {} profile".format(minion))
@@ -165,7 +169,7 @@ def minion_profile(minion, osds, grains):
     return ""
 
 
-def _insert_replace_flag(grains, minion, osds, filename):
+def _insert_replace_flag(grains, disks, minion, osds, filename):
     """ Insert 'replace: true' into proposal file for all osds that are passed in """
 
     with open(filename, 'rb') as proposal_file:
@@ -176,7 +180,21 @@ def _insert_replace_flag(grains, minion, osds, filename):
         if str(osd_id) in grains[minion]:
             osd_partition = grains[minion][str(osd_id)]['partitions']['osd']
             # Only add the block device and not the partitions
-            paths_by_id.append(osd_partition.rstrip('0123456789').replace("-part", ""))
+
+            grains_disk = osd_partition.rstrip('0123456789').replace("-part", "")
+            # loop over cephdisks.list output
+            for disk in disks:
+                # check if the disk, that is mapped to the osd ID in grains is same as 'disk'
+                if grains_disk in disk['Device Files']:
+                    # now loop over the old proposal disks
+                    for prop_disk in content['ceph']['storage']['osds']:
+                        # check if the old proposal disk is in the Device Files of the disk that is mapped to the grains
+                        if prop_disk in disk['Device Files']:
+                            paths_by_id.append(prop_disk)
+
+
+
+
     for path in paths_by_id:
         content['ceph']['storage']['osds'][path]['replace'] = True
 
